@@ -18,3 +18,11 @@ plotly==5.22.0
 # ── Data handling (transitive deps — pin for reproducibility) ────
 pandas==2.2.2
 numpy==1.26.4
+gunicorn
+fastapi
+uvicorn
+pydantic
+yfinance
+qiskit
+qiskit-finance
+qiskit-optimization
