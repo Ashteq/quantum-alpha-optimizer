@@ -21,7 +21,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-BACKEND_URL: str = "http://localhost:8000/optimize"
+BACKEND_URL: str = "https://quantum-backend.onrender.com/optimize" # Use your actual Render URL here
 REQUEST_TIMEOUT: int = 45
 DEFAULT_TICKERS: str = "AAPL, MSFT, GOOGL, AMZN, TSLA, NVDA"
 
