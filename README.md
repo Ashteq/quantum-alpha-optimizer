@@ -1,143 +1,34 @@
-# ⚛️ Quantum-Alpha Portfolio Optimizer
+# Quantum-Alpha Portfolio Optimizer
 
-A full-stack MVP that uses **QAOA (Quantum Approximate Optimisation Algorithm)** via
-Qiskit to select an optimal binary subset of stocks from real market data.
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.25+-FF4B4B.svg)
+![Qiskit](https://img.shields.io/badge/Qiskit-Quantum-6929C4.svg)
 
-```
-FastAPI backend (port 8000)  ←→  Streamlit frontend (port 8501)
-         ↑                                  ↑
-    yfinance + Qiskit                  Plotly charts
-```
+A full-stack, quantum-inspired web application designed to translate raw market data into precision asset allocation. The system utilizes Quadratic Unconstrained Binary Optimization (QUBO) and the Quantum Approximate Optimization Algorithm (QAOA) to solve complex financial selection problems.
 
----
+### Video Demonstration
+https://github.com/Ashteq/quantum-alpha-optimizer/blob/main/demo%201.mp4
+## System Architecture
 
-## Architecture
+The project is built on a decoupled microservice architecture to ensure high scalability and a strict separation of concerns.
 
-```
-quantum-alpha-optimizer/
-├── backend/
-│   ├── main.py            # FastAPI app — POST /optimize endpoint
-│   ├── market_data.py     # yfinance → mu (returns) + sigma (cov matrix)
-│   ├── quantum_solver.py  # QAOA via Qiskit → binary selection vector
-│   └── requirements.txt
-└── frontend/
-    ├── app.py             # Streamlit UI + Plotly charts
-    └── requirements.txt
-```
+* **Frontend (Streamlit):** A responsive interface featuring interactive Plotly data visualizations. The user interface is engineered with a high-contrast retro aesthetic and includes dynamic fault tolerance mechanisms.
+* **Backend (FastAPI):** A high-performance REST API handling asynchronous client requests and coordinating the quantum mathematical pipeline.
+* **Data Ingestion (yfinance):** Automatically fetches live historical asset pricing and calculates expected returns and covariance matrices.
+* **Quantum Engine (Qiskit):** Formulates the portfolio optimization problem as a QUBO and executes a local QAOA simulator to determine the optimal binary asset selection.
 
----
+## Key Features
 
-## Quick Start (WSL / Ubuntu)
+* **Algorithmic Asset Selection:** Bypasses traditional continuous-weight models in favor of a discrete, binary selection model optimized for quantum simulators.
+* **Fault-Tolerant UI (Fallback Demo Mode):** The frontend includes a self-healing interface. If the FastAPI backend is unreachable due to network latency or server suspension, the frontend intercepts the HTTP error and automatically initializes a local mock data generation sequence. This guarantees the dashboard remains interactive for demonstration purposes under varying network conditions.
+* **Data Visualization:** Translates complex quantum state outputs into accessible, interactive financial charts.
 
-### 1. Prerequisites
+## Local Environment Setup
 
+The following instructions assume a Linux or WSL (Windows Subsystem for Linux) environment.
+
+**1. Clone the repository:**
 ```bash
-sudo apt update && sudo apt install python3.11 python3.11-venv python3-pip -y
-```
-
-### 2. Backend setup
-
-```bash
-cd quantum-alpha-optimizer/backend
-
-python3.11 -m venv .venv
-source .venv/bin/activate
-
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Start the API server
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-✅ Backend is ready at `http://localhost:8000`
-📄 Auto-docs at `http://localhost:8000/docs`
-
-### 3. Frontend setup (new terminal)
-
-```bash
-cd quantum-alpha-optimizer/frontend
-
-python3.11 -m venv .venv
-source .venv/bin/activate
-
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Start Streamlit
-streamlit run app.py --server.port 8501
-```
-
-✅ Frontend is ready at `http://localhost:8501`
-
----
-
-## API Reference
-
-### `POST /optimize`
-
-**Request body (JSON)**
-
-| Field         | Type    | Default | Description                                |
-|---------------|---------|---------|--------------------------------------------|
-| `tickers`     | list    | —       | 2–10 stock ticker symbols                  |
-| `budget`      | int     | auto    | Number of assets to select                 |
-| `risk_factor` | float   | 0.5     | Risk aversion q ∈ [0, 1]                  |
-| `qaoa_reps`   | int     | 1       | QAOA circuit depth p ∈ {1, 2, 3}          |
-
-**Example**
-
-```bash
-curl -s -X POST http://localhost:8000/optimize \
-  -H "Content-Type: application/json" \
-  -d '{"tickers": ["AAPL","MSFT","GOOGL","AMZN"], "budget": 2, "risk_factor": 0.5}' \
-  | python3 -m json.tool
-```
-
-**Response fields**
-
-- `selected_tickers` — assets chosen by QAOA
-- `selection_vector` — raw binary vector (length = n)
-- `portfolio_expected_return` — annualised return of selected portfolio
-- `portfolio_variance` — annualised variance
-- `sharpe_proxy` — return / sqrt(variance)
-- `elapsed_seconds` — server-side wall time
-
----
-
-## Optimisation Formulation
-
-The problem is a **Quadratic Unconstrained Binary Optimisation (QUBO)**:
-
-```
-minimise   q · xᵀ Σ x  −  (1−q) · μᵀ x
-subject to Σ xᵢ = B,   xᵢ ∈ {0, 1}
-```
-
-- `x`  — binary selection vector  
-- `Σ`  — annualised covariance matrix (risk)  
-- `μ`  — annualised expected return vector  
-- `q`  — risk-aversion coefficient  
-- `B`  — budget (number of assets)
-
-Solved by `PortfolioOptimization` → `MinimumEigenOptimizer(QAOA)` from Qiskit.
-
----
-
-## Troubleshooting
-
-| Symptom | Fix |
-|---------|-----|
-| `ConnectionError` in frontend | Ensure backend is running on port 8000 |
-| `ValueError: Only 1 valid ticker` | One of your tickers may be delisted or misspelled |
-| QAOA timeout | Reduce tickers to ≤ 6 or set `qaoa_reps=1` |
-| `ModuleNotFoundError: qiskit_finance` | Re-run `pip install qiskit-finance==0.4.0` |
-| Port already in use | `lsof -i :8000` then `kill <PID>` |
-
----
-
-## Notes for WSL Users
-
-- Use `0.0.0.0` (not `127.0.0.1`) when starting uvicorn so Windows browsers can reach it.
-- If using WSL2, the Windows IP is reachable via `$(hostname -I | awk '{print $1}')`.
-- Streamlit and FastAPI can each run in their own WSL terminal pane.
+git clone [https://github.com/YOUR-USERNAME/quantum-alpha-optimizer.git](https://github.com/YOUR-USERNAME/quantum-alpha-optimizer.git)
+cd quantum-alpha-optimizer
