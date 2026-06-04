@@ -16,6 +16,21 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 import yfinance as yf
+import requests # <-- 1. Add this import at the top
+
+def fetch_market_data(tickers: list[str]):
+    # 2. Create a custom session with a human browser header
+    session = requests.Session()
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+    })
+    
+    # 3. Pass the session into the download function
+    # (Adjust the period or interval if your Claude code had different parameters)
+    data = yf.download(tickers, period="1y", session=session)
+    
+    if data.empty:
+        raise ValueError(f"Yahoo Finance returned no data for tickers: {tickers}. They might be invalid or delisted.")
 
 # ── Logging ──────────────────────────────────────────────────────────────────
 logger = logging.getLogger(__name__)
