@@ -8,8 +8,7 @@
 A full-stack, quantum-inspired web application designed to translate raw market data into precision asset allocation. The system utilizes Quadratic Unconstrained Binary Optimization (QUBO) and the Quantum Approximate Optimization Algorithm (QAOA) to solve complex financial selection problems.
 
 ### Video Demonstration
-*(Insert link to your YouTube video or embed your MP4 file here)*
-
+https://github.com/Ashteq/quantum-alpha-optimizer/blob/main/demo%201.mp4
 ## System Architecture
 
 The project is built on a decoupled microservice architecture to ensure high scalability and a strict separation of concerns.
